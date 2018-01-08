@@ -38,8 +38,17 @@ module.exports = {
         User.find({loginId: req.body.loginId})
         .then(user=>{
             if(!user) return res.badRequest("User Not Found")
-            user.token = jwtTokenService.issue({id: user.id})
-            res.ok(user);
+            User.compare(req.body.password, user, (error,match)=>{
+                if(match)
+                {
+                    user.token = jwtTokenService.issue({id: user.id})
+                    res.ok(user);
+                } 
+                else
+                {
+                    return res.badRequest("Invalid Password");
+                }
+            })
         }).catch(error=>{
             sails.log.error(error)
         });
